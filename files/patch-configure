@@ -1,0 +1,157 @@
+Description: Configure for the FreeBSD ports build system.
+ Add the --enable-spam-threshold and --enable-spam-junkfolder options.
+ Do not try to create the etc/vpopmail directory and tcp.smtp in place,
+ this is done by the port at install time.
+ FreeBSD does not have libresolv.
+ Pass the correct compiler and linker flags to the cdb build.
+ FreeBSD does not need -R $libdir (a.k.a. --rpath) - the MySQL client
+ library is added to ldconfig's search path in its own startup script.
+Forwarded: not-needed
+Author: Peter Pentchev <roam@FreeBSD.org>,
+	Alex Dupre <ale@FreeBSD.org>,
+	Renato Botelho <garga@FreeBSD.org>
+Last-Update: 2010-09-13
+
+--- a/configure
++++ b/configure
+@@ -1403,6 +1403,8 @@
+   --enable-onchange-script   Enable onchange script. See README.onchange for more info.
+   --enable-spamassassin      Enable spamassassin. See  README.spamassassin for more info.
+   --enable-spamc-prog=PATH   Full path to spamc program /usr/{local/}bin/spamc.
++  --enable-spam-threshold=# or n Automatically delete messages that score more than # spam hits
++  --enable-spam-junkfolder   Automatically move (not deleted) spam messages into Junk folder
+   --enable-maildrop          Enable maildrop. See  README.maildrop for more info.
+   --enable-maildrop-prog=PATH    Full path to maildrop program /usr/{local/}bin/maildrop.
+   --enable-domainquotas      Enable non-system domain quotas. See README.quotas for more info.
+@@ -5785,27 +5787,6 @@
+ 
+ #----------------------------------------------------------------------
+ 
+-if test ! -d $vpopmaildir/etc
+-then
+-  if test ! -d $vpopmaildir
+-  then
+-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: creating $vpopmaildir " >&5
+-$as_echo "$as_me: WARNING: creating $vpopmaildir " >&2;}
+-    mkdir -p $vpopmaildir
+-    chown $vpopmailuid $vpopmaildir
+-    chgrp $vpopmailgid $vpopmaildir
+-    chmod 755 $vpopmaildir
+-  fi
+-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: making a vpopmail etc directory " >&5
+-$as_echo "$as_me: WARNING: making a vpopmail etc directory " >&2;}
+-  mkdir $vpopmaildir/etc
+-  chown $vpopmailuid "$vpopmaildir"/etc
+-  chgrp $vpopmailgid "$vpopmaildir"/etc
+-  chmod 755 "$vpopmaildir"/etc
+-fi
+-
+-#----------------------------------------------------------------------
+-
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether roaming-users has been enabled" >&5
+ $as_echo_n "checking whether roaming-users has been enabled... " >&6; }
+ # Check whether --enable-roaming-users was given.
+@@ -5888,28 +5869,11 @@
+     # Check whether --enable-tcpserver_file was given.
+ if test "${enable_tcpserver_file+set}" = set; then :
+   enableval=$enable_tcpserver_file; tcpserver_file="$enableval"
++  echo "127.:allow,RELAYCLIENT=\"\"" > ${VCFGDIR}/tcp.smtp
+ else
+ 
+-            if test "$tcpserver_file" = ""
+-            then
+-                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Unable to find your tcpserver relay file." >&5
+-$as_echo "$as_me: WARNING: Unable to find your tcpserver relay file." >&2;}
+-                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Creating tcp.smtp in \"$vpopmaildir\"/etc/tcp.smtp." >&5
+-$as_echo "$as_me: WARNING: Creating tcp.smtp in \"$vpopmaildir\"/etc/tcp.smtp." >&2;}
+-
+-                echo "127.:allow,RELAYCLIENT=\"\"" > "$vpopmaildir"/etc/tcp.smtp
+-                tcpserver_file="$vpopmaildir"/etc/tcp.smtp
+-            fi
+-
+-
+ fi
+ 
+-
+-    if test ! -f "$tcpserver_file"
+-    then
+-        as_fn_error "Unable to find your tcp.smtp file, specify --enable-tcpserver-path=/full/path/to/tcp.smtp" "$LINENO" 5
+-    fi
+-
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ $as_echo "yes" >&6; }
+ 
+@@ -6414,6 +6378,44 @@
+ #define SPAMC_PROG "$spamc_prog"
+ _ACEOF
+ 
++# Check whether --enable-spam-threshold or --disable-spam-threshold was given.
++if test "${enable_spam_threshold+set}" = set; then
++  enableval="$enable_spam_threshold"
++  ENABLE_SPAM_THRESHOLD=$enableval
++else
++  ENABLE_SPAM_THRESHOLD=0
++fi
++
++case $ENABLE_SPAM_THRESHOLD in
++0*|n*|N*)
++      ;;
++*)
++          cat >> confdefs.h <<EOF
++#define SPAM_THRESHOLD $ENABLE_SPAM_THRESHOLD
++EOF
++
++          ;;
++esac
++
++# Check whether --enable-spam-junkfolder or --disable-spam-junkfolder was give
++
++if test "${enable_spam_junkfolder+set}" = set; then
++  enableval="$enable_spam_junkfolder"
++  ENABLE_SPAM_JUNKFOLDER=$enableval
++else
++  ENABLE_SPAM_JUNKFOLDER=0
++fi
++
++case $ENABLE_SPAM_JUNKFOLDER in
++0*|n*|N*)
++      ;;
++*)
++          cat >> confdefs.h <<EOF
++#define SPAM_JUNKFOLDER 1
++EOF
++
++          ;;
++esac
+ 
+       ;;
+ esac
+@@ -6664,7 +6666,7 @@
+         as_fn_error "Unable to find your MySQL lib dir, specify --enable-libdir." "$LINENO" 5
+     fi
+ 
+-    auth_libs="-Xlinker -R -Xlinker $libdir -L$libdir $extralibflags -lmysqlclient -lz -lm"
++    auth_libs="-L$libdir $extralibflags -lmysqlclient -lz -lm"
+ 
+     ;;
+ 
+@@ -6727,7 +6729,7 @@
+ #define USE_LDAP $USE_LDAP
+ _ACEOF
+ 
+-    auth_libs="-L/usr/local/lib -lldap -llber -lresolv"
++    auth_libs="-L/usr/local/lib -lldap -llber"
+ 
+     auth_inc="-I/usr/local/include"
+ 
+@@ -9029,8 +9031,8 @@
+     ;;
+ esac
+ 
+-echo "${CC} -O2" > cdb/conf-cc
+-echo "${CC} -s" > cdb/conf-ld
++echo "${CC} ${CFLAGS}" > cdb/conf-cc
++echo "${CC} ${STRIP}" > cdb/conf-ld
+ 
+ echo ""
+ echo ""
