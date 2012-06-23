@@ -29,7 +29,9 @@ CONFLICTS=	vpopmail-devel-5.*
 
 GNU_CONFIGURE=	YES
 USE_GMAKE=	YES
-USE_PERL5=	YES
+
+USERS=		vpopmail
+GROUPS=		vchkpw
 
 VCFGDIR?=	${WRKDIR}/vcfg
 VCFGFILES?=	inc_deps lib_deps tcp.smtp
@@ -39,7 +41,9 @@ CONFIGURE_ENV+=	VCFGDIR="${VCFGDIR}" \
 CONFIGURE_ARGS=	--enable-qmaildir=${QMAIL_PREFIX} \
 		--enable-tcprules-prog=${LOCALBASE}/bin/tcprules \
 		--enable-tcpserver-file=${PREFIX}/vpopmail/etc/tcp.smtp \
-		--enable-non-root-build
+		--enable-non-root-build \
+		--enable-vpopuser=${USERS} \
+		--enable-vpopgroup=${GROUPS}
 
 #
 # User-configurable variables
@@ -92,8 +96,6 @@ CONFIGURE_ARGS=	--enable-qmaildir=${QMAIL_PREFIX} \
 # WITH_SQL_LOG_REMOVE_DELETED - remove log entries for deleted users/domains
 # QMAIL_PREFIX  - location of qmail directory
 # PREFIX	- installation area for vpopmail (see comment below)
-# VCHKPW_GID	- the group ID of the new vchkpw group (89)
-# VPOPMAIL_UID	- the user ID of the new vpopmail user (89)
 #
 # PostgreSQL database configuration options
 #
@@ -365,7 +367,9 @@ DOCS=		README README.activedirectory README.filelocking \
 #
 
 pre-configure:
-	@PKG_PREFIX=${PREFIX} ${PERL5} ${PKGINSTALL}
+	${AWK} -F: '/^${USERS}:/ { print $$3 }' ${UID_FILES} > ${WRKSRC}/vpopmail.uid
+	${AWK} -F: '/^${USERS}:/ { sub(/\/usr\/local/, "${PREFIX}", $$9); print $$9 }' ${UID_FILES} > ${WRKSRC}/vpopmail.dir
+	${AWK} -F: '/^${GROUPS}:/ { print $$3 }' ${GID_FILES} > ${WRKSRC}/vpopmail.gid
 .if defined(WITH_PGSQL)
 .if defined(WITH_PGSQL_DB)
 	${REINPLACE_CMD} -E -e "s/(#define DB.*)vpopmail(.*)/\1${WITH_PGSQL_DB}\2/" ${WRKSRC}/vpgsql.h
