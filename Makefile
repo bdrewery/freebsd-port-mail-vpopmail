@@ -15,12 +15,13 @@ MASTER_SITES=	SF/${PORTNAME}/${PORTNAME}-stable/${PORTVERSION} \
 MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Easy virtual domain and authentication package for use with qmail
 
+LICENSE=	GPLv2 GPLv3
+LICENSE_COMB=	dual
+
 BUILD_DEPENDS=	${LOCALBASE}/bin/tcprules:${PORTSDIR}/sysutils/ucspi-tcp
 RUN_DEPENDS=	${LOCALBASE}/bin/tcprules:${PORTSDIR}/sysutils/ucspi-tcp
 
 PATCH_STRIP=	-p1
-LICENSE=	GPLv2 GPLv3
-LICENSE_COMB=	dual
 
 USE_QMAIL=	yes
 
@@ -254,7 +255,7 @@ CFLAGS+=	-fPIC
 
 # Uncomment this, or set PREFIX to /home if you have an existing
 # vpopmail install with the vpopmail users' home directory set to
-# /home/vpopmail - package rules dictate we default to /usr/local/vpopmail
+# /home/vpopmail - package rules dictate we default to LOCALBASE/vpopmail
 #
 #PREFIX?=	/home
 
