@@ -12,7 +12,7 @@ CATEGORIES=	mail
 MASTER_SITES=	SF/${PORTNAME}/${PORTNAME}-stable/${PORTVERSION} \
 		SF/${PORTNAME}/${PORTNAME}-devel/${PORTVERSION}
 
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	bryan@shatow.net
 COMMENT=	Easy virtual domain and authentication package for use with qmail
 
 LICENSE=	GPLv2 GPLv3
@@ -103,8 +103,7 @@ CONFIGURE_ARGS=	--enable-qmaildir=${QMAIL_PREFIX} \
 # Oracle database configuration options
 #
 # WARNING: This is NOT TESTED, not in the least.
-# Please report any success or failure to the port maintainer,
-# Peter Pentchev <roam@FreeBSD.org>
+# Please report any success or failure to the port maintainer
 #
 # WITH_ORACLE_PROC - the name of the Oracle Pro-C precompiler, default 'proc'
 # WITH_ORACLE_SERVICE - the Oracle service name (jimmy)
@@ -116,8 +115,7 @@ CONFIGURE_ARGS=	--enable-qmaildir=${QMAIL_PREFIX} \
 # Sybase database configuration options
 #
 # WARNING: This is NOT TESTED, not in the least.
-# Please report any success or failure to the port maintainer,
-# Peter Pentchev <roam@FreeBSD.org>
+# Please report any success or failure to the port maintainer
 #
 # WITH_SYBASE_SERVER - the Sybase server name (empty)
 # WITH_SYBASE_USER - the username for connecting to the Sybase server (sa)
@@ -128,8 +126,7 @@ CONFIGURE_ARGS=	--enable-qmaildir=${QMAIL_PREFIX} \
 # Courier IMAP configuration options for authvchkpw
 #
 # WARNING: This is NOT TESTED, not in the least.
-# Please report any success or failure to the port maintainer,
-# Peter Pentchev <roam@FreeBSD.org>
+# Please report any success or failure to the port maintainer
 #
 # WITH_COURIER_IMAPLOGIN - the path to the imaplogin program
 # WITH_COURIER_IMAPD - the path to the imapd program
