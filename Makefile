@@ -1,9 +1,5 @@
-# New ports collection makefile for: vpopmail
-# Date created:		21 Sep 2000
-# Whom:			Neil Blakey-Milner
-#
+# Created by: Neil Blakey-Milner
 # $FreeBSD: ports/mail/vpopmail/Makefile,v 1.86 2012/02/27 20:32:27 glarkin Exp $
-#
 
 PORTNAME=	vpopmail
 PORTVERSION=	5.4.32
